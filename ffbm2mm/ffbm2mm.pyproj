@@ -8,10 +8,14 @@
     <StartupFile>ffbm2mm.py</StartupFile>
     <SearchPath>
     </SearchPath>
-    <WorkingDirectory>.</WorkingDirectory>
+    <WorkingDirectory>..</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>ffbm2mm</Name>
     <RootNamespace>ffbm2mm</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments>testdata/bookmarks.json testdata/bookmarks.mm</CommandLineArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,6 +27,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ffbm2mm.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="template.xml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
