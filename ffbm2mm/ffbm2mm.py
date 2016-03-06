@@ -11,6 +11,7 @@ import os
 import json
 import re
 import string
+import collections
 import xml.sax.saxutils as sax
 
 
@@ -21,6 +22,9 @@ class MMNode:
         self.text = self._get_text(json_obj)
         self.link = self._get_link(json_obj)
         self.children = self._get_children(json_obj)
+
+    def __str__(self):
+        return self.text
 
     def dump(self):
         nodestr = '<node TEXT="{}"'.format(self.text)
@@ -49,18 +53,20 @@ class MMNode:
 
     @staticmethod
     def _get_text(obj):
-        text = obj["title"]
-        if text:
-            return escape2xml(text)
-        else:
-            return "UNKNOWN"
+        try:
+            text = obj["title"]
+            if text:
+                return escape2xml(text)
+        except KeyError:
+            pass
+        return "UNKNOWN"
 
     @staticmethod
     def _get_link(obj):
         try:
             uri = obj["uri"]
             if validate_url(uri):
-                return uri
+                return sax.escape(uri)
         except KeyError:
             pass
         return None
@@ -124,7 +130,7 @@ def parse_args(args):
 def main(args):
     bookmarks_fname, mm_fname = parse_args(args)
     with open(bookmarks_fname, encoding="utf8") as f:
-        bookmarks = json.load(f)
+        bookmarks = json.load(f, object_pairs_hook=collections.OrderedDict)
     mm = MMNode(bookmarks)
     with open(mm_fname, "w") as f:
         f.write(mm.dump())
