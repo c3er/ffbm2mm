@@ -9,15 +9,16 @@ format.
 import sys
 import os
 import json
+import re
 
 
 class MMNode:
     def __init__(self, json_obj, is_root=True):
         self._json_obj = json_obj
         self.is_root = is_root
-        self.text = json_obj["title"]
-        self.link = self.get_link(json_obj)
-        self.children = self.get_children(json_obj)
+        self.text = self._get_text(json_obj)
+        self.link = self._get_link(json_obj)
+        self.children = self._get_children(json_obj)
 
     def dump(self):
         nodestr = '<node TEXT="{}"'.format(self.text)
@@ -41,17 +42,30 @@ class MMNode:
                 nodestr,
                 '</map>'
             ))
+
         return nodestr
 
     @staticmethod
-    def get_link(obj):
-        try:
-            return obj["uri"]
-        except KeyError:
-            return None
+    def _get_text(obj):
+        text = obj["title"]
+        if text:
+            # XXX Transform special characters to XML entities
+            return text
+        else:
+            return "UNKNOWN"
 
     @staticmethod
-    def get_children(obj):
+    def _get_link(obj):
+        try:
+            uri = obj["uri"]
+            if validate_url(uri):
+                return uri
+        except KeyError:
+            pass
+        return None
+
+    @staticmethod
+    def _get_children(obj):
         children = []
         try:
             json_children = obj["children"]
@@ -60,6 +74,18 @@ class MMNode:
         except KeyError:
             pass
         return children
+
+
+def validate_url(url):
+    # http://stackoverflow.com/questions/7160737/python-how-to-validate-a-url-in-python-malformed-or-not
+    regex = re.compile(
+        r'^(?:http|ftp)s?://'                                                                # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+        r'localhost|'                                                                        #localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'                                               # ...or ip
+        r'(?::\d+)?'                                                                         # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    return bool(regex.match(url))
 
 
 def error(msg):
