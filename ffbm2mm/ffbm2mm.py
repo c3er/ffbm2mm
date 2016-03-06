@@ -10,6 +10,8 @@ import sys
 import os
 import json
 import re
+import string
+import xml.sax.saxutils as sax
 
 
 class MMNode:
@@ -49,8 +51,7 @@ class MMNode:
     def _get_text(obj):
         text = obj["title"]
         if text:
-            # XXX Transform special characters to XML entities
-            return text
+            return escape2xml(text)
         else:
             return "UNKNOWN"
 
@@ -76,6 +77,17 @@ class MMNode:
         return children
 
 
+# Helpers #####################################################################
+
+def escape2xml(text):
+    tmp = sax.escape(text)
+    charlist = list(tmp)
+    for i, char in enumerate(charlist):
+        if char not in string.printable:
+            charlist[i] = "&#x" + hex(ord(char))[2:] + ";"
+    return "".join(charlist)
+
+
 def validate_url(url):
     # http://stackoverflow.com/questions/7160737/python-how-to-validate-a-url-in-python-malformed-or-not
     regex = re.compile(
@@ -87,11 +99,15 @@ def validate_url(url):
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     return bool(regex.match(url))
 
+###############################################################################
+
 
 def error(msg):
     print(msg, file=sys.stderr)
     sys.exit(1)
 
+
+# Helpers used by main function ###############################################
 
 def parse_args(args):
     if len(args) != 3:
@@ -102,10 +118,12 @@ def parse_args(args):
         error("Could not find bookmarks file: " + bookmarks_fname)
     return bookmarks_fname, mm_fname
 
+###############################################################################
+
 
 def main(args):
     bookmarks_fname, mm_fname = parse_args(args)
-    with open(bookmarks_fname) as f:
+    with open(bookmarks_fname, encoding="utf8") as f:
         bookmarks = json.load(f)
     mm = MMNode(bookmarks)
     with open(mm_fname, "w") as f:
