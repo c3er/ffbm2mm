@@ -8,10 +8,10 @@ format.
 
 import sys
 import os
-import json
 import re
 import string
 import collections
+import json
 import xml.sax.saxutils as sax
 
 
@@ -22,9 +22,6 @@ class MMNode:
         self.text = self._get_text(json_obj)
         self.link = self._get_link(json_obj)
         self.children = self._get_children(json_obj)
-
-    def __str__(self):
-        return self.text
 
     def dump(self):
         nodestr = '<node TEXT="{}"'.format(self.text)
@@ -102,7 +99,9 @@ def validate_url(url):
         r'localhost|'                                                                        #localhost...
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'                                               # ...or ip
         r'(?::\d+)?'                                                                         # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+        r'(?:/?|[/?]\S+)$',
+        re.IGNORECASE
+    )
     return bool(regex.match(url))
 
 ###############################################################################
